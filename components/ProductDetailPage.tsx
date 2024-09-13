@@ -22,6 +22,7 @@ const ProductDetailPage = (props: ProductDetailPageProps) => {
 
       <img src={props.product.image_url} />
       <p>{props.product.description}</p>
+      <p>{props.product.price}</p>
       <h3>Reviews</h3>
       <div
         style={{

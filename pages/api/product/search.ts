@@ -1,6 +1,6 @@
-import { NextApiHandler } from "next";
-import db from "../../../db/db";
-import { Product } from "../../../types/product";
+import { NextApiHandler } from 'next';
+import db from '../../../db/db';
+import { Product } from '../../../types/product';
 
 /**
  * GET /api/product/search?search={query}
@@ -22,12 +22,38 @@ interface ProductSearchResponse {
 }
 
 const productsSearch: NextApiHandler = async (req, res) => {
-  const { query } = req.query;
-  const result = await db.query('SELECT * FROM "product"');
-  res.status(200).json({
-    success: true,
-    products: result,
-  });
+  try {
+    const { search } = req.query as ProductSearchParams;
+
+    if (typeof search !== 'string') {
+      return res.status(400).json({
+        success: false,
+        products: [],
+        message: 'Invalid search parameter',
+      } as ProductSearchResponse);
+    }
+
+    let result;
+
+    if (search.trim() === '') {
+      result = await db.query(`SELECT * FROM "product"`);
+    } else {
+      result = await db.query(`SELECT * FROM "product" WHERE name ILIKE $1`, [
+        `%${search}%`,
+      ]);
+    }
+
+    res.status(200).json({
+      success: true,
+      products: result,
+    } as ProductSearchResponse);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      products: [],
+      message: 'Internal server error',
+    } as ProductSearchResponse);
+  }
 };
 
 export default productsSearch;

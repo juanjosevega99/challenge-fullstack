@@ -1,5 +1,6 @@
 import { GetServerSideProps, NextPage } from "next";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import type { Product } from "../../types/product";
 
 export const getServerSideProps: GetServerSideProps = async ({ res }) => {
@@ -17,6 +18,26 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
 };
 
 const ProductsPage: NextPage<{ data: Product[] }> = (props) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [products, setProducts] = useState<Product[]>(props.data || []);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const result = await fetch(`http://localhost:5003/api/product/search?search=${searchTerm}`);
+        const data = await result.json();
+        if (data.success) {
+          setProducts(data.products);
+        } else {
+          setProducts([]);
+        }
+      } catch (error) {
+        setProducts([]);
+      }
+    };
+
+    fetchProducts();
+  }, [searchTerm]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
